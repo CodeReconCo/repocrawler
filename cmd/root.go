@@ -31,17 +31,22 @@ import (
 )
 
 var cfgFile string
+var Organization string
+var OutputFile string
+var ScmURL string
+var TokenName string
+var IsGitlab bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "repocrawler",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Crawls all source control repositories you have access to and reports back.",
+	Long: `	Repocrawler was created to get a quick lay of the land of what source control
+	repositories you have access to. It allows you to see which repos might have the most
+	commits or users. Along with what repositories are active (meaning a check-in within the last six months). 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Hopefully this allows you to narrow down what pieces of your software inventory you 
+	need to look at.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -54,20 +59,18 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	fmt.Println(IsGitlab)
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.repocrawler.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&Organization, "organization", "", "A specific organization/project name that the crawl should be scoped to")
+	rootCmd.PersistentFlags().StringVar(&OutputFile, "output", "repocrawler.json", "The file that should have the output recorded to")
+	rootCmd.PersistentFlags().StringVar(&ScmURL, "scmUrl", "https://api.github.com", "The API URL for the source control management software you want to crawl")
+	rootCmd.PersistentFlags().StringVar(&TokenName, "tokenName", "GIT_TOKEN", "The environment variable name we should retrieve the token for API authentication")
 }
 
 // initConfig reads in config file and ENV variables if set.
