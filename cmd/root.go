@@ -22,8 +22,10 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -49,7 +51,8 @@ var rootCmd = &cobra.Command{
 	need to look at.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	// Run: func(cmd *cobra.Command, args []string) {
+	// },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -59,8 +62,6 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	fmt.Println(IsGitlab)
 }
 
 func init() {
@@ -69,7 +70,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.repocrawler.yaml)")
 	rootCmd.PersistentFlags().StringVar(&Organization, "organization", "", "A specific organization/project name that the crawl should be scoped to")
 	rootCmd.PersistentFlags().StringVar(&OutputFile, "output", "repocrawler.json", "The file that should have the output recorded to")
-	rootCmd.PersistentFlags().StringVar(&ScmURL, "scmUrl", "https://api.github.com", "The API URL for the source control management software you want to crawl")
+	rootCmd.PersistentFlags().StringVar(&ScmURL, "scmUrl", "", "The API URL for the source control management software you want to crawl")
 	rootCmd.PersistentFlags().StringVar(&TokenName, "tokenName", "GIT_TOKEN", "The environment variable name we should retrieve the token for API authentication")
 }
 
@@ -97,4 +98,10 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func WriteOutput(results []RepoInformation) {
+	output, _ := json.MarshalIndent(results, "", " ")
+	_ = ioutil.WriteFile(OutputFile, output, 0644)
+	// TODO: Implement
 }
