@@ -50,17 +50,6 @@ func init() {
 	rootCmd.AddCommand(githubCmd)
 }
 
-func (gc GithubCrawler) isActiveRepo(lastCommit time.Time) bool {
-	now := time.Now()
-	difference := now.Sub(lastCommit)
-	sixMonths := 24 * 30 * 6 // Roughly six months
-
-	if int(difference.Hours()) > sixMonths {
-		return false
-	}
-	return true
-}
-
 func (gc GithubCrawler) getCollaboratorInformation(ctx context.Context, org, repo *string) int {
 	opt := &github.ListCollaboratorsOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -148,7 +137,7 @@ func (gc GithubCrawler) crawlRepositories(ctx context.Context, org *string, resu
 			ri.Languages = *repo.Language
 			ri.CreatedOn = repo.CreatedAt.Time
 			ri.LastCommit = repo.UpdatedAt.Time
-			ri.IsActive = gc.isActiveRepo(repo.UpdatedAt.Time)
+			ri.IsActive = IsActiveRepo(repo.UpdatedAt.Time)
 			if *repo.Archived {
 				ri.Status = "Archived"
 			} else if *repo.Disabled {

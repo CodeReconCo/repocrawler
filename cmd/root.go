@@ -30,6 +30,7 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"time"
 )
 
 var cfgFile string
@@ -100,8 +101,18 @@ func initConfig() {
 	}
 }
 
+func IsActiveRepo(lastCommit time.Time) bool {
+	now := time.Now()
+	difference := now.Sub(lastCommit)
+	sixMonths := 24 * 30 * 6 // Roughly six months
+
+	if int(difference.Hours()) > sixMonths {
+		return false
+	}
+	return true
+}
+
 func WriteOutput(results []RepoInformation) {
 	output, _ := json.MarshalIndent(results, "", " ")
 	_ = ioutil.WriteFile(OutputFile, output, 0644)
-	// TODO: Implement
 }

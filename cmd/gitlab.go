@@ -23,30 +23,142 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
+	"os"
+	"strings"
+	"time"
 )
+
+type GitlabCrawler struct {
+	client *gitlab.Client
+}
 
 // gitlabCmd represents the gitlab command
 var gitlabCmd = &cobra.Command{
 	Use:   "gitlab",
 	Short: "Executes a crawl against Gitlab",
-	Long: `Executes a crawl against Gitlab.com or Gitlab instance`,
+	Long:  `Executes a crawl against Gitlab.com or Gitlab instance`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gitlab called")
+		crawler := GitlabCrawler{}
+		crawler.runScan()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(gitlabCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func (gc GitlabCrawler) calculateAverageCommits(numCommits int, createdOn time.Time) float64 {
+	numDays := int(time.Now().Sub(createdOn).Hours() / 24)
+	return float64(numCommits) / float64(numDays)
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// gitlabCmd.PersistentFlags().String("foo", "", "A help for foo")
+func (gc GitlabCrawler) retrieveProjectLanguages(projectId int) string {
+	languages, _, _ := gc.client.Projects.GetProjectLanguages(projectId)
+	var langs []string
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// gitlabCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	for k, _ := range *languages {
+		langs = append(langs, k)
+	}
+	return strings.Join(langs, ",")
+}
+
+func (gc GitlabCrawler) retrieveNumberOfMembers(projectId int) int {
+
+	opt := &gitlab.ListProjectUserOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 10,
+			Page:    1,
+		},
+	}
+	numMembers := 0
+	for {
+
+		users, resp, err := gc.client.Projects.ListProjectsUsers(projectId, opt)
+		if err != nil {
+			fmt.Println("Failed to get members: ", err)
+		}
+
+		numMembers += len(users)
+
+		if resp.CurrentPage >= resp.TotalPages {
+			break
+		}
+
+		opt.Page = resp.NextPage
+	}
+	return numMembers
+}
+
+func (gc GitlabCrawler) runScan() {
+	token := os.Getenv(TokenName)
+	if token == "" {
+		fmt.Println(TokenName + " is empty")
+		return
+	}
+
+	var err error
+	if ScmURL != "" {
+		gc.client, err = gitlab.NewClient(token, gitlab.WithBaseURL(ScmURL))
+	} else {
+		gc.client, err = gitlab.NewClient(token)
+	}
+
+	if err != nil {
+		fmt.Println("Failed to create client: ", err)
+	}
+
+	var results []RepoInformation
+	trueValue := true
+	opt := &gitlab.ListProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 10,
+			Page:    1,
+		},
+		Membership: &trueValue,
+		Statistics: &trueValue,
+	}
+	// Go through the Groups...
+	for {
+		projects, resp, err := gc.client.Projects.ListProjects(opt)
+		if err != nil {
+			fmt.Println("Failed to get projects: ", err)
+		}
+
+		for _, p := range projects {
+			ri := RepoInformation{}
+			ri.Name = p.Name
+
+			var groupNames []string
+			for _, group := range p.SharedWithGroups {
+				groupNames = append(groupNames, group.GroupName)
+			}
+			ri.Organization = strings.Join(groupNames, ",")
+			ri.URL = p.WebURL
+			ri.Private = !p.Public
+			ri.NumberOfForks = p.ForksCount
+			ri.NumberOfStars = p.StarCount
+			ri.CreatedOn = *p.CreatedAt
+			ri.LastCommit = *p.LastActivityAt
+			ri.IsActive = IsActiveRepo(ri.LastCommit)
+			if p.Archived {
+				ri.Status = "Archived"
+			}
+			ri.NumberOfCommits = p.Statistics.CommitCount
+			ri.AverageCommitsPerDay = gc.calculateAverageCommits(ri.NumberOfCommits, ri.CreatedOn)
+			ri.Languages = gc.retrieveProjectLanguages(p.ID)
+			ri.NumberOfCollaborators = gc.retrieveNumberOfMembers(p.ID)
+
+			results = append(results, ri)
+			WriteOutput(results)
+		}
+
+		if resp.CurrentPage >= resp.TotalPages {
+			break
+		}
+
+		opt.Page = resp.NextPage
+	}
+
 }
