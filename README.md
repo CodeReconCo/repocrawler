@@ -24,3 +24,43 @@ Repository crawler was created to easily get a usage snapshot of all the reposit
 	* Created On - When the repository was created
 	* Average Commits Per Day - The average commits that happen per-day
 	* Status - Status of this repository
+
+### Example Output
+```
+[
+ {
+  "Organization": "codereconco",
+  "Name": "repocrawler",
+  "URL": "https://github.com/CodeReconCo/repocrawler",
+  "Private": false,
+  "NumberOfCollaborators": 1,
+  "NumberOfForks": 0,
+  "NumberOfCommits": 7,
+  "NumberOfStars": 1,
+  "NumberOfWatchers": 1,
+  "Languages": "Go",
+  "IsActive": true,
+  "LastCommit": "2020-06-02T04:18:13Z",
+  "CreatedOn": "2020-04-22T13:06:47Z",
+  "AverageCommitsPerDay": 0.04827586206896552,
+  "Status": ""
+ },
+ {
+  "Organization": "codereconco",
+  "Name": "githubsecurityauditor",
+  "URL": "https://github.com/CodeReconCo/githubsecurityauditor",
+  "Private": false,
+  "NumberOfCollaborators": 1,
+  "NumberOfForks": 0,
+  "NumberOfCommits": 7,
+  "NumberOfStars": 0,
+  "NumberOfWatchers": 0,
+  "Languages": "Go",
+  "IsActive": true,
+  "LastCommit": "2020-09-15T03:36:51Z",
+  "CreatedOn": "2020-06-09T04:20:22Z",
+  "AverageCommitsPerDay": 0.07216494845360824,
+  "Status": ""
+ }
+]
+```
