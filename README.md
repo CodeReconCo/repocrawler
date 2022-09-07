@@ -4,7 +4,7 @@ Repository crawler was created to easily get a usage snapshot of all the reposit
 ## How to Compile
 * Make sure Go is installed
 * Put a Github or Gitlab API token in an environment variable
-* Run the tool `go run .` there are two main commands `github` or `gitlab` as an example if I wanted to scan an example org in github the command would look like `go run . github --organization EXAMPLE`.
+* Run the tool `go run .` there are two main commands `github` or `gitlab` as an example if I wanted to scan an example org in github the command would look like `go run . github --organization EXAMPLE`.  
 
 ## Output
 * By default the output will be written to `repocrawler.json`, however, you can change that with the flag `--output` and put a different file name. The output is only in JSON.
