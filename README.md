@@ -2,7 +2,7 @@
 Repository crawler was created to easily get a usage snapshot of all the repositories that you have access to. This is useful when either joining a new company, an acquisition or just making sure you are focusing on the most important software being written by your organization.
 
 ## How to Compile
-* Make sure Go is installed
+* Make sure Go is installed  
 * Put a Github or Gitlab API token in an environment variable
 * Run the tool `go run .` there are two main commands `github` or `gitlab` as an example if I wanted to scan an example org in github the command would look like `go run . github --organization EXAMPLE`.
 
