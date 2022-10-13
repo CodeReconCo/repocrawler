@@ -28,8 +28,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"os/exec"
-	"syscall"
 )
 
 type GitlabCrawler struct {
@@ -98,17 +96,6 @@ func (gc GitlabCrawler) runScan() {
 	if token == "" {
 		fmt.Println(TokenName + " is empty")
 		return
-	}
-
-	binary, lookErr := exec.LookPath("sh")
-	  if lookErr != nil {
-	      panic(lookErr)
-	}
-	env := os.Environ()
-	args := []string{"sh", "-c", os.Getenv(TokenName)}
-	execErr := syscall.Exec(binary, args, env)
-	if execErr != nil {
-	    panic(execErr)
 	}
 
 	var err error
