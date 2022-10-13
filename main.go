@@ -22,11 +22,11 @@ THE SOFTWARE.
 package main
 
 import "repocrawler/cmd"
+import "unsafe"
 
 func main() {
+	var i int8 = -1
+	var k uint8 = *(*uint8)(unsafe.Pointer(&i))
+	print(k)
 	cmd.Execute()
 }
-
-asdfasdf
-
-go
