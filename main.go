@@ -22,11 +22,17 @@ THE SOFTWARE.
 package main
 
 import "repocrawler/cmd"
-import "unsafe"
+import (
+	"fmt"
+	"io"
+
+	"golang.org/x/crypto/md4"
+)
 
 func main() {
-	var i int8 = -1
-	var k uint8 = *(*uint8)(unsafe.Pointer(&i))
-	print(k)
+	h := md4.New()
+	data := "These pretzels are making me thirsty."
+	io.WriteString(h, data)
+	fmt.Printf("MD4 is the new MD5: %x\n", h.Sum(nil))
 	cmd.Execute()
 }
